@@ -1,10 +1,14 @@
 #List All Courses with Their Category Names
-
+/*Question 1: Retrieve a list of courses along with the name of the category
+ to which each course belongs*/
+ 
 SELECT c.course_name, cat.category_name
 FROM courses c
 INNER JOIN categories cat ON c.category_id = cat.category_id;
 
 #Found Number of Courses in Each Category
+
+/*Question 2: For each category, count how many courses exist*/
 
 SELECT cat.category_name, count(c.course_id) 
 As Total_Course
@@ -12,26 +16,26 @@ FROM categories as cat INNER JOIN courses as c
 on cat.category_id=c.category_id
 GROUP BY category_name;
 
-/*Question3: Retrieve the full names and email addresses
+/*Question 3: Retrieve the full names and email addresses
  for all users with the role 'student. '*/
  
 SELECT concat(first_name," ",last_name) AS Full_Name,email
 FROM user
 WHERE role='student';
 
-/*Question4: For a given course (e.g., course_id = 1),
+/*Question 4: For a given course (e.g., course_id = 1),
  list its modules sorted by their order*/
 select course_id, module_id,module_order,
 module_name from modules
 where course_id=1
 order by module_order;
 
-/*Question: Retrieve all content items for a specific 
+/*Question 5: Retrieve all content items for a specific 
 module (for example, module_id = 2)*/
 select * from content as c 
 where module_id=2;
 
-/*Question: Calculate the average score of submissions 
+/*Question 6: Calculate the average score of submissions 
 for a given assessment (e.g., assessment_id = 1)*/
 
 SELECT avg(score) as average_score,submission_id,assessment_id,
@@ -161,13 +165,44 @@ GROUP BY c.course_id,c.course_name;
 SELECT * FROM enrollments
 WHERE enrolled_at BETWEEN '2023-05-01' AND '2023-05-31';
 
- /*Question: For each assessment submission, 
+ /*Question 22: For each assessment submission, 
  display the submission details along 
  with the corresponding course name, 
  student name, and assessment name*/
  
-SELECT s.submission_id,c.course_id,c.course_name,
-concat(u.first_name," ",u.last_name) AS Student_Name,a.assessment_name
-FROM assessment_submission as s INNER JOIN assessments 
-as a INNER JOIN courses as c INNER JOIN user as u
-ON 
+SELECT a.submission_id,a.assessment_id,a.user_id,
+a.submitted_at,a.score,a.submission_data, 
+u.first_name, u.last_name, c.course_name, asmt.assessment_name
+FROM assessment_submission as a
+INNER JOIN user as u ON a.user_id = u.user_id
+INNER JOIN assessments as asmt ON a.assessment_id = asmt.assessment_id
+INNER JOIN modules as m ON asmt.module_id = m.module_id
+INNER JOIN courses as c ON m.course_id = c.course_id
+where u.role ='student';
+
+/*Question 23: Retrieve a list of all users showing their full names and roles*/
+
+SELECT concat(first_name," ",last_name) AS Full_Name,
+role FROM user;
+
+/*Question 24: Assuming a passing score is 60 or above, 
+calculate the passing percentage for each assessment*/
+
+SELECT assessment_id,
+       (SUM(CASE WHEN score >= 60 THEN 1 ELSE 0 END) * 100.0 / COUNT(*)) AS passing_percentage
+FROM assessment_submission
+GROUP BY assessment_id;
+
+/*we got 100 percentage because all assessment score is greater
+than 60 which means all people got passing persentage*/ 
+
+/*Question 25: List the courses for which there are no enrollment records*/
+
+SELECT c.course_id,c.course_name FROM courses AS c
+LEFT JOIN enrollments AS e 
+ON c.course_id=e.course_id
+WHERE enrollment_id IS NULL;
+
+/*Note: all the courses is enrolled so we dont 
+receive any output*/
+
